@@ -369,8 +369,9 @@ function WeddingInvitation() {
     >
       <audio
         ref={audioRef}
-        src="/paulyudin-wedding-485932.mp3"
+        src="/Dekopul Kandulin Thema (දකපල කඳලන තම)  Violin Instrumental  @MithiniDissanayake.mp3"
         loop
+        autoPlay
       />
 
       {/* Music Toggle Button */}
