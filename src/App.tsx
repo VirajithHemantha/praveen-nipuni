@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, MapPin, Calendar, Clock, Music, Volume2, VolumeX, Copy, Check, ExternalLink, Settings, Camera } from "lucide-react";
+import { Sparkles, MapPin, Calendar, Clock, Music, Volume2, VolumeX, Copy, Check, ExternalLink, Settings, Camera, ChevronDown } from "lucide-react";
 import { Routes, Route, useSearchParams, Link } from "react-router-dom";
+import { EnvelopeOpening } from "./components/EnvelopeOpening";
 
 /**
  * Premium Sri Lankan Wedding Invitation Theme
@@ -78,8 +79,8 @@ function FloatingPetals({ disabled = false }: { disabled?: boolean }) {
       return;
     }
 
-    const colors = ["#f9f2e0", "#e9d6a0", "#d4af37", "#fcf9f0"];
-    const petalCount = isMobile ? 10 : 18;
+    const colors = ["#b48c36", "#9a7629", "#805f1d", "#d4af37"];
+    const petalCount = isMobile ? 24 : 40;
     const newPetals = Array.from({ length: petalCount }).map((_, i) => ({
       id: i,
       x: Math.random() * 100,
@@ -264,27 +265,52 @@ function WeddingInvitation() {
   const [searchParams] = useSearchParams();
   const guestName = searchParams.get("to");
 
-  const [rsvpData, setRsvpData] = useState({ name: guestName || "", guests: "1", dietary: "" });
+  const [rsvpData, setRsvpData] = useState({ name: guestName || "", attending: "yes", guests: "1", dietary: "" });
   const [wishData, setWishData] = useState({ name: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState({ rsvp: false, wish: false });
   const [submitted, setSubmitted] = useState({ rsvp: false, wish: false });
 
   // IMPORTANT: Replace this with your actual Google Apps Script Web App URL
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw27GpF2TKE4l8yLdejrNk0HaEo_8GJjAUpsAvPEN2CPu-L7reajCuDRYRoHnwnwcS_/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw0NXiffl9ZbdxazeBRBodSFu9Z6EHWF0QiVQWsOew3mHAKbb5jZ0zXeRbCDdDMvO6JnQ/exec";
+
+  const submitToGoogleSheet = async (payload: Record<string, string>) => {
+    if (!SCRIPT_URL) {
+      throw new Error("Missing SCRIPT_URL");
+    }
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        body: new URLSearchParams(payload),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
+    } catch (err) {
+      console.error("Submission error:", err);
+      throw err;
+    }
+  };
 
   const handleRSVPSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting.rsvp || submitted.rsvp) return;
 
+    if (!rsvpData.name.trim()) return;
+
     setIsSubmitting({ ...isSubmitting, rsvp: true });
     try {
-      await fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...rsvpData, formType: 'rsvp' }),
+      await submitToGoogleSheet({
+        action: "rsvp",
+        day: "1",
+        name: rsvpData.name.trim(),
+        attending: rsvpData.attending,
+        guests: rsvpData.attending === "yes" ? rsvpData.guests : "0",
+        dietaryNotes: rsvpData.dietary,
       });
       setSubmitted({ ...submitted, rsvp: true });
+      setRsvpData({ ...rsvpData, name: "", attending: "yes", guests: "1", dietary: "" });
     } catch (error) {
       console.error('Error submitting RSVP:', error);
       alert('Something went wrong. Please try again.');
@@ -297,15 +323,18 @@ function WeddingInvitation() {
     e.preventDefault();
     if (isSubmitting.wish || submitted.wish) return;
 
+    if (!wishData.name.trim() || !wishData.message.trim()) return;
+
     setIsSubmitting({ ...isSubmitting, wish: true });
     try {
-      await fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...wishData, formType: 'wish' }),
+      await submitToGoogleSheet({
+        action: "wish",
+        day: "1",
+        name: wishData.name.trim(),
+        message: wishData.message.trim(),
       });
       setSubmitted({ ...submitted, wish: true });
+      setWishData({ name: "", message: "" });
     } catch (error) {
       console.error('Error submitting wish:', error);
       alert('Something went wrong. Please try again.');
@@ -347,7 +376,7 @@ function WeddingInvitation() {
       const constrainedNetwork = Boolean(connection?.saveData) || /2g/.test(connection?.effectiveType ?? "");
       const lowMemory = typeof getDeviceMemory() === "number" && getDeviceMemory()! <= 4;
       const smallScreen = window.innerWidth < 768;
-      setIsLowPerformanceMode(motionMedia.matches || constrainedNetwork || lowMemory || smallScreen);
+      setIsLowPerformanceMode(motionMedia.matches || constrainedNetwork || lowMemory);
     };
 
     updatePerformanceMode();
@@ -369,7 +398,7 @@ function WeddingInvitation() {
     >
       <audio
         ref={audioRef}
-        src="/Dekopul Kandulin Thema (දකපල කඳලන තම)  Violin Instrumental  @MithiniDissanayake.mp3"
+        src="/Ed Sheeran - Perfect (Lyrics)_256k.mp3"
         loop
         autoPlay
       />
@@ -394,135 +423,18 @@ function WeddingInvitation() {
 
       <AnimatePresence mode="wait">
         {!isOpened ? (
-          <motion.div
-            key="envelope-stage"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{
-              opacity: 0,
-              scale: 1.1,
-              transition: { duration: 0.8, ease: "easeInOut" }
+          <EnvelopeOpening
+            key="envelope"
+            onComplete={() => {
+              setIsOpened(true);
             }}
-            className="flex flex-col items-center justify-center p-6 relative z-10 w-full"
-          >
-            {/* Title */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-              <span className="inline-block px-5 py-2 rounded-full bg-theme-50 border border-theme-200 text-[10px] uppercase tracking-[0.5em] text-theme-700 font-bold mb-6">
-                {guestName ? "Specially For You" : "Save the Date"}
-              </span>
-              <h1 className="font-cinzel text-4xl md:text-5xl text-stone-800 mb-4 tracking-tight">
-                {guestName ? guestName : "Praveen & Nipuni"}
-              </h1>
-              <p className="text-stone-500 text-sm tracking-[0.2em] font-light">
-                {guestName ? "ARE CORDIALLY INVITED" : "DECEMBER 03, 2026"}
-              </p>
-            </motion.div>
-
-            {/* Gatefold Envelope */}
-            <div
-              className="relative w-full max-w-[430px] aspect-[1/1.42] flex items-center justify-center group cursor-pointer perspective-1000"
-              onClick={() => {
-                setIsOpened(true);
-                if (audioRef.current && !isPlaying) {
-                  audioRef.current.play().catch(e => console.log("Music play blocked", e));
-                  setIsPlaying(true);
-                }
-              }}
-            >
-              <div className="absolute -inset-8 bg-[radial-gradient(circle,_rgba(212,175,55,0.25)_0%,_rgba(241,228,192,0.15)_45%,_transparent_75%)] blur-3xl opacity-90" />
-              <div className="absolute inset-0 bg-gradient-to-b from-[#cea065] via-[#e2c299] to-[#cea065] rounded-[1.4rem] shadow-[0_28px_80px_-20px_rgba(206,160,101,0.35)] border border-[#4a3f12]/30 overflow-hidden" />
-              <div className="absolute inset-[10px] rounded-[1.05rem] border border-[#4a3f12]/20 pointer-events-none" />
-              <div className="absolute inset-0 opacity-[0.07] paper-grain-strong" />
-
-              <motion.div
-                initial={{ opacity: 0.15, x: -140 }}
-                animate={{ opacity: [0.08, 0.2, 0.08], x: [-160, 260, -160] }}
-                transition={{ duration: 6.8, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-0 bottom-0 w-24 bg-gradient-to-r from-transparent via-white/50 to-transparent blur-lg z-20 pointer-events-none"
-              />
-
-              <div className="absolute top-[-1px] left-1/2 -translate-x-1/2 w-[88%] h-[44%] bg-gradient-to-b from-theme-200/90 to-theme-100/60 clip-path-envelope z-10" />
-              <div className="absolute top-[3px] left-1/2 -translate-x-1/2 w-[84%] h-[39%] border border-theme-400/30 clip-path-envelope z-10 opacity-60" />
-
-              {/* Left Flap */}
-              <motion.div
-                className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-tr from-[#a67c4d] via-[#cea065] to-[#e2c299] z-30 shadow-[8px_0_28px_rgba(42,32,10,0.3)] origin-left flex items-center justify-end pr-4 overflow-hidden rounded-l-[1.2rem]"
-                whileHover={{ rotateY: -14 }}
-                transition={{ type: "spring", stiffness: 110, damping: 16 }}
-              >
-                <div className="absolute inset-0 opacity-20 paper-grain" />
-                <div className="absolute right-0 top-0 bottom-0 w-[1.5px] bg-gradient-to-b from-theme-100/60 via-theme-200/40 to-theme-100/60" />
-                <div className="absolute left-0 top-0 w-full h-full bg-gradient-to-tr from-black/20 via-transparent to-white/10" />
-
-                {/* Envelope Illustrations */}
-                <InviteImage
-                  src={mandalaImage}
-                  className="absolute -top-20 md:-top-28 -left-20 md:-left-28 w-56 md:w-72 h-56 md:h-72 opacity-25 mix-blend-multiply mandala-dark-filter"
-                  alt=""
-                />
-                <InviteImage
-                  src={mandalaImage}
-                  className="absolute -bottom-20 md:-bottom-28 -left-20 md:-left-28 w-56 md:w-72 h-56 md:h-72 opacity-20 mix-blend-multiply -rotate-90 mandala-dark-filter"
-                  alt=""
-                />
-
-                <div className="text-theme-100/30 rotate-90 whitespace-nowrap text-[10px] tracking-[0.55em] uppercase font-bold relative z-10">
-                  PRAVEEN & NIPUNI
-                </div>
-              </motion.div>
-
-              {/* Right Flap */}
-              <motion.div
-                className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-tl from-[#a67c4d] via-[#cea065] to-[#e2c299] z-30 shadow-[-8px_0_28px_rgba(42,32,10,0.3)] origin-right flex items-center justify-start pl-4 overflow-hidden rounded-r-[1.2rem]"
-                whileHover={{ rotateY: 14 }}
-                transition={{ type: "spring", stiffness: 110, damping: 16 }}
-              >
-                <div className="absolute inset-0 opacity-20 paper-grain" />
-                <div className="absolute left-0 top-0 bottom-0 w-[1.5px] bg-gradient-to-b from-theme-100/60 via-theme-200/40 to-theme-100/60" />
-                <div className="absolute right-0 top-0 w-full h-full bg-gradient-to-tl from-black/20 via-transparent to-white/10" />
-
-                {/* Envelope Illustrations */}
-                <InviteImage
-                  src={mandalaImage}
-                  className="absolute -top-20 md:-top-28 -right-20 md:-right-28 w-56 md:w-72 h-56 md:h-72 opacity-25 mix-blend-multiply rotate-90 mandala-dark-filter"
-                  alt=""
-                />
-                <InviteImage
-                  src={mandalaImage}
-                  className="absolute -bottom-20 md:-bottom-28 -right-20 md:-right-28 w-56 md:w-72 h-56 md:h-72 opacity-20 mix-blend-multiply rotate-180 mandala-dark-filter"
-                  alt=""
-                />
-              </motion.div>
-
-              {/* The Seal Button */}
-              <motion.div
-                whileHover={{ scale: 1.1, rotate: -6 }}
-                whileTap={{ scale: 0.9 }}
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-40 w-28 h-28 rounded-full bg-gradient-to-br from-[#e2c299] via-white to-[#cea065] shadow-[0_20px_45px_-10px_rgba(206,160,101,0.5)] border-[5px] border-[#a67c4d] flex items-center justify-center group-hover:shadow-theme-500/40"
-              >
-                <div className="absolute inset-1.5 rounded-full border border-theme-600/40" />
-                <div className="absolute inset-3 rounded-full border border-theme-700/30" />
-                <div className="text-center relative z-10">
-                  <p className="font-cinzel text-[1.7rem] font-bold text-stone-800 leading-none">P&N</p>
-                  <div className="h-px w-12 bg-stone-400 mx-auto my-1.5" />
-                  <p className="text-[8px] uppercase tracking-[0.35em] font-bold text-stone-600">Open</p>
-                </div>
-              </motion.div>
-
-              {/* Card Preview inside (Mandala) */}
-              <div className="absolute inset-10 opacity-45 flex items-center justify-center z-10">
-                <InviteImage src={mandalaImage} alt="" className={`w-full h-auto mix-blend-multiply mandala-gold-filter ${isLowPerformanceMode ? "" : "animate-spin-slow"}`} style={{ animationDuration: '24s' }} />
-              </div>
-
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 text-[8px] uppercase tracking-[0.45em] text-theme-700/80 font-bold bg-white/70 backdrop-blur-md px-4 py-2 rounded-full border border-theme-200/80 shadow-sm">
-                Tap Seal To Open
-              </div>
-            </div>
-
-            <p className="mt-8 text-[11px] uppercase tracking-[0.6em] text-stone-400 font-bold animate-pulse">
-              Tap to Reveal
-            </p>
-          </motion.div>
+            onMusicStart={() => {
+              if (audioRef.current && !isPlaying) {
+                audioRef.current.play().catch(e => console.log("Music play blocked", e));
+                setIsPlaying(true);
+              }
+            }}
+          />
         ) : (
           <motion.div
             key="website-stage"
@@ -616,7 +528,7 @@ function WeddingInvitation() {
                     </div>
                     <div className="font-cinzel space-y-1">
                       <p className="text-2xl md:text-4xl text-stone-700 tracking-[0.2em] md:tracking-[0.3em] font-bold">03 DEC 2026</p>
-                      <p className="text-xs md:text-sm text-theme-600 tracking-[0.2em] uppercase font-bold">St. Infant Jesus Church, Colombo 02</p>
+                      <p className="text-xs md:text-sm text-theme-600 tracking-[0.2em] uppercase font-bold">Infant Jesus Church, Colombo 02</p>
                     </div>
                   </motion.div>
                 </div>
@@ -755,7 +667,7 @@ function WeddingInvitation() {
                         <p className="font-cinzel text-lg md:text-xl text-theme-700 tracking-[0.2em] font-bold mb-8">1600 LT</p>
                         
                         <div className="space-y-3 mt-auto">
-                          <p className="text-stone-800 text-sm md:text-base tracking-wide font-medium uppercase font-cinzel">St. Infant Jesus Church</p>
+                          <p className="text-stone-800 text-sm md:text-base tracking-wide font-medium uppercase font-cinzel">Infant Jesus Church</p>
                           <p className="text-stone-500 text-xs md:text-sm tracking-[0.2em] uppercase">Colombo 02</p>
                         </div>
                       </div>
@@ -823,7 +735,7 @@ function WeddingInvitation() {
                   </div>
 
                   <h2 className="font-cinzel text-3xl md:text-5xl text-theme-900 mb-8 relative z-10 tracking-widest font-bold drop-shadow-sm px-4 leading-[1.4]">
-                    Wait for the <span className="font-playball text-theme-700 italic lowercase tracking-normal text-4xl md:text-7xl ml-2">magic</span>
+                    Save the <span className="font-playball text-theme-700 italic lowercase tracking-normal text-4xl md:text-7xl ml-2">Date</span>
                   </h2>
 
                   <p className="text-[10px] md:text-[11px] uppercase tracking-[0.5em] text-theme-600 font-bold bg-white/80 backdrop-blur-sm px-8 py-3 rounded-full border border-theme-200/50 inline-flex items-center gap-3 shadow-[0_4px_15px_-5px_rgba(0,0,0,0.05)] relative z-10">
@@ -845,12 +757,17 @@ function WeddingInvitation() {
 
               <div className="container mx-auto px-6 max-w-6xl relative z-10">
                 {/* Church Ceremony Venue */}
-                <div className="grid md:grid-cols-2 gap-16 md:gap-24 items-center mb-32 md:mb-48">
+                <div className="grid md:grid-cols-2 gap-16 md:gap-24 items-center mb-32 md:mb-48 relative">
+                  {/* Church Watermark */}
+                  <div className="absolute top-1/2 left-0 md:-left-24 -translate-y-1/2 w-full md:w-[120%] opacity-[0.15] pointer-events-none mix-blend-multiply z-0 hidden md:flex justify-center md:justify-start overflow-hidden">
+                    <img src="https://i0.wp.com/churchwonders.com/wp-content/uploads/2022/09/65f48-ij_exterior_9885c2.jpg" alt="" className="w-full max-w-[700px] h-auto object-cover grayscale" />
+                  </div>
+
                   <motion.div
                     initial={{ opacity: 0, x: -30 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
-                    className="space-y-8 flex flex-col items-start"
+                    className="space-y-8 flex flex-col items-start relative z-10 bg-[url('https://i0.wp.com/churchwonders.com/wp-content/uploads/2022/09/65f48-ij_exterior_9885c2.jpg')] md:bg-none bg-cover bg-center bg-white/85 md:bg-transparent bg-blend-overlay backdrop-blur-[2px] md:backdrop-blur-none p-8 md:p-0 rounded-3xl md:rounded-none border border-theme-100 md:border-none shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] md:shadow-none w-full overflow-hidden"
                   >
                     <div className="flex flex-col items-start gap-4">
                       <div className="flex items-center gap-4">
@@ -858,7 +775,7 @@ function WeddingInvitation() {
                         <span className="text-theme-600 font-bold uppercase tracking-[0.4em] text-[9px] md:text-[11px]">Church Ceremony</span>
                       </div>
                       <h2 className="font-playball text-[3.5rem] sm:text-[4rem] md:text-[5.5rem] text-theme-900 leading-[1] drop-shadow-sm ml-[-4px]">
-                        St. Infant Jesus Church
+                        Infant Jesus Church
                       </h2>
                     </div>
 
@@ -882,7 +799,7 @@ function WeddingInvitation() {
 
                     <div className="pt-8 w-full md:w-auto">
                       <button
-                        onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=St.+Infant+Jesus+Church+Colombo+02', '_blank')}
+                        onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=Infant+Jesus+Church+Colombo+02', '_blank')}
                         className="w-full md:w-auto flex items-center justify-center gap-4 bg-theme-800 text-white px-10 py-5 rounded-full font-bold uppercase tracking-[0.2em] text-[10px] md:text-xs hover:bg-theme-900 hover:shadow-xl hover:shadow-theme-900/20 transition-all duration-300 group"
                       >
                         <MapPin className="w-4 h-4 group-hover:-translate-y-1 transition-transform duration-300" />
@@ -903,7 +820,7 @@ function WeddingInvitation() {
                     {/* The Maps iframe */}
                     <div className="absolute inset-0 w-full h-full scale-[1.2] group-hover:scale-[1.15] transition-transform duration-[2s]">
                       <iframe
-                        src="https://maps.google.com/maps?q=St.%20Infant%20Jesus%20Church%20Colombo%2002&t=&z=14&ie=UTF8&iwloc=&output=embed"
+                        src="https://maps.google.com/maps?q=Infant%20Jesus%20Church%20Colombo%2002&t=&z=14&ie=UTF8&iwloc=&output=embed"
                         width="100%"
                         height="100%"
                         style={{ border: 0 }}
@@ -925,12 +842,17 @@ function WeddingInvitation() {
                 </div>
 
                 {/* Reception Venue */}
-                <div className="grid md:grid-cols-2 gap-16 md:gap-24 items-center">
+                <div className="grid md:grid-cols-2 gap-16 md:gap-24 items-center relative">
+                  {/* Reception Watermark */}
+                  <div className="absolute top-1/2 right-0 md:-right-24 -translate-y-1/2 w-full md:w-[120%] opacity-[0.15] pointer-events-none mix-blend-multiply z-0 hidden md:flex justify-center md:justify-end overflow-hidden">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtpS9JaNpwV8C-m-iiHXOnbILb9AxgBn0I0dXMk-EJHUTP5KGG8aIwxmg5&s=10" alt="" className="w-full max-w-[700px] h-auto object-cover grayscale" />
+                  </div>
+
                   <motion.div
                     initial={{ opacity: 0, x: 30 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
-                    className="space-y-8 flex flex-col items-start md:order-2"
+                    className="space-y-8 flex flex-col items-start md:order-2 relative z-10 bg-[url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtpS9JaNpwV8C-m-iiHXOnbILb9AxgBn0I0dXMk-EJHUTP5KGG8aIwxmg5&s=10')] md:bg-none bg-cover bg-center bg-white/85 md:bg-transparent bg-blend-overlay backdrop-blur-[2px] md:backdrop-blur-none p-8 md:p-0 rounded-3xl md:rounded-none border border-theme-100 md:border-none shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] md:shadow-none w-full overflow-hidden"
                   >
                     <div className="flex flex-col items-start gap-4">
                       <div className="flex items-center gap-4">
@@ -1007,102 +929,164 @@ function WeddingInvitation() {
             </section>
 
             {/* RSVP Section */}
-            <section className="cv-auto py-24 md:py-36 bg-[#1a1917] text-white relative overflow-hidden flex flex-col items-center">
-              {/* Opulent dark background */}
-              <div className="absolute inset-0 opacity-10 paper-grain pointer-events-none" />
-              <div className="absolute top-0 right-0 w-[60vw] h-[60vw] max-w-[800px] bg-theme-900 blur-[150px] rounded-full opacity-30 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-[60vw] h-[60vw] max-w-[800px] bg-black blur-[150px] rounded-full opacity-40 pointer-events-none" />
+            <section className="relative py-32 md:py-48 bg-[#f8f6f2] flex flex-col items-center overflow-hidden">
+              <div className="absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] pointer-events-none" />
 
-              <div className="container mx-auto px-4 max-w-2xl text-center relative z-10 w-full">
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
+              <div className="container mx-auto px-4 max-w-4xl flex flex-col items-center relative z-10 w-full">
+                <motion.h2
+                  initial={{ opacity: 0, y: -20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  className="flex flex-col items-center"
+                  className="font-cinzel text-2xl md:text-4xl text-slate-800 tracking-[0.3em] mb-12 uppercase text-center"
                 >
-                  <p className="text-[10px] md:text-[12px] uppercase tracking-[0.5em] md:tracking-[0.8em] text-theme-300 font-bold mb-6">Will You Join Us?</p>
-                  <h2 className="font-playball text-[3.5rem] sm:text-[4rem] md:text-[5.5rem] text-white mb-6 drop-shadow-md">RSVP</h2>
-                  <div className="flex items-center gap-4 justify-center w-full mb-8 opacity-60">
-                    <div className="h-px w-16 md:w-24 bg-gradient-to-r from-transparent to-theme-300" />
-                    <div className="w-1.5 h-1.5 rotate-45 bg-theme-300" />
-                    <div className="h-px w-16 md:w-24 bg-gradient-to-l from-transparent to-theme-300" />
-                  </div>
-                  <p className="text-stone-300 text-sm md:text-base max-w-md mx-auto leading-relaxed mb-16 tracking-wide font-light">
-                    We would be absolutely thrilled to celebrate with you. Kindly respond by the end of April.
-                  </p>
+                  FOR OUR BIG DAY
+                </motion.h2>
 
-                  {/* Premium RSVP Form */}
-                  <div className="w-full bg-white/5 backdrop-blur-md p-6 sm:p-8 md:p-12 rounded-[2rem] border border-white/10 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.5)]">
-                    {submitted.rsvp ? (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="py-12 flex flex-col items-center gap-6"
-                      >
-                        <div className="w-16 h-16 bg-theme-600 rounded-full flex items-center justify-center text-white text-2xl">✓</div>
-                        <h3 className="font-playball text-3xl text-white">Thank You!</h3>
-                        <p className="text-stone-300 font-light tracking-wide text-sm">Your RSVP has been successfully received.</p>
-                      </motion.div>
-                    ) : (
-                      <form className="space-y-8 text-left" onSubmit={handleRSVPSubmit}>
-                        <div className="space-y-3">
-                          <label className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] font-bold text-theme-200 ml-2">Full Name</label>
+                <div className="relative w-full max-w-[550px] aspect-[4/5] flex items-center justify-center pt-12 md:pt-24 mt-12 md:mt-0">
+                  <div className="absolute inset-0 z-0">
+                    <img
+                      src="/images/11.png"
+                      alt="Envelope"
+                      className="w-full h-full object-contain object-bottom drop-shadow-[0_40px_80px_rgba(0,0,0,0.3)]"
+                    />
+                  </div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 70, scale: 0.7 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 0.85 }}
+                    transition={{ delay: 0.6, duration: 2.2, ease: "easeOut" }}
+                    viewport={{ once: true }}
+                    className="absolute -top-32 md:-top-56 left-1/2 -translate-x-1/2 w-[100%] md:w-[120%] h-64 md:h-[320px] pointer-events-none z-0"
+                  >
+                    <img
+                      src="/images/12.png"
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-contain object-bottom drop-shadow-sm opacity-90"
+                    />
+                    <img
+                      src="/images/12.png"
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-contain object-bottom scale-x-[-1] -rotate-12 translate-x-12 opacity-80"
+                    />
+                    <img
+                      src="/images/12.png"
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-contain object-bottom rotate-[15deg] -translate-x-12 opacity-70"
+                    />
+                    <img
+                      src="/images/12.png"
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-contain object-bottom scale-75 translate-y-12 opacity-60"
+                    />
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ y: 150, opacity: 0 }}
+                    whileInView={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.5, duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+                    viewport={{ once: true }}
+                    className="relative z-10 w-[94%] md:w-[88%] bg-[#fdfaf5]/95 backdrop-blur-sm shadow-[0_20px_50px_rgba(0,0,0,0.15)] border-[0.5px] border-[#d4af37]/40 flex flex-col items-center pt-4 pb-12 px-6 md:px-10"
+                  >
+                    {/* Premium inner frame */}
+                    <div className="absolute inset-3 md:inset-4 border-[0.5px] border-[#d4af37]/20 pointer-events-none" />
+
+                    <div className="w-full flex flex-col items-center mt-6 relative z-10 px-2 md:px-6">
+
+
+                      <div className="flex items-center justify-center gap-4 w-full mb-8">
+                        <div className="h-[0.5px] w-full bg-[#d4af37]/40" />
+                        <h3 className="font-alex text-5xl md:text-7xl bg-gradient-to-r from-[#b48c36] via-[#ebd197] to-[#b48c36] bg-clip-text text-transparent whitespace-nowrap leading-[0.8] drop-shadow-sm px-2">
+                          R.S.V.P
+                        </h3>
+                        <div className="h-[0.5px] w-full bg-[#d4af37]/40" />
+                      </div>
+
+                      <form className="w-full space-y-8 text-left max-w-sm mt-4" onSubmit={handleRSVPSubmit}>
+                        <div className="relative group">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] absolute -top-4 left-0 transition-colors group-focus-within:text-[#d4af37]">Name(s)</label>
                           <input
                             type="text"
-                            required
+                            placeholder="M.................................................."
                             value={rsvpData.name}
-                            onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })}
-                            placeholder="John & Jane Doe"
-                            className="w-full bg-transparent border-b border-white/20 px-2 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-theme-300 transition-colors font-cinzel text-lg md:text-xl tracking-wide"
+                            onChange={(e) => {
+                              setSubmitted((prev) => ({ ...prev, rsvp: false }));
+                              setRsvpData((prev) => ({ ...prev, name: e.target.value }));
+                            }}
+                            className="w-full bg-transparent border-b-[0.5px] border-slate-300 px-0 py-2 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:border-[#d4af37] transition-all font-serif text-lg md:text-xl italic"
+                            required
                           />
                         </div>
 
-                        <div className="space-y-3">
-                          <label className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] font-bold text-theme-200 ml-2">Guests</label>
-                          <div className="relative">
-                            <select
-                              value={rsvpData.guests}
-                              onChange={(e) => setRsvpData({ ...rsvpData, guests: e.target.value })}
-                              className="w-full bg-transparent border-b border-white/20 px-2 py-3 text-white focus:outline-none focus:border-theme-300 transition-colors font-cinzel text-lg md:text-xl tracking-wide appearance-none cursor-pointer"
-                            >
-                              <option value="1" className="bg-[#1a1917] text-white">1 Guest (Just Me)</option>
-                              <option value="2" className="bg-[#1a1917] text-white">2 Guests</option>
-                              <option value="3" className="bg-[#1a1917] text-white">3 Guests</option>
-                              <option value="4" className="bg-[#1a1917] text-white">4 Guests</option>
-                              <option value="0" className="bg-[#1a1917] text-theme-300">Regretfully Decline</option>
-                            </select>
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                              <div className="w-2 h-2 border-r border-b border-theme-300 rotate-45 transform -translate-y-[25%]" />
-                            </div>
+                        <div className="space-y-5 pt-6">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                            Will you attend?
+                          </label>
+
+                          <div className="flex flex-col gap-3 font-serif italic text-lg md:text-xl text-slate-700">
+                            <label className="flex items-center gap-4 cursor-pointer group">
+                              <div className={`w-5 h-5 rounded-none border-[0.5px] flex items-center justify-center transition-colors ${rsvpData.attending === "yes" ? "border-[#d4af37] bg-[#d4af37]/10" : "border-slate-300 bg-transparent group-hover:border-[#d4af37]/50"}`}>
+                                {rsvpData.attending === "yes" && <div className="w-3 h-3 bg-[#d4af37]" />}
+                              </div>
+                              <input type="radio" className="hidden" checked={rsvpData.attending === "yes"} onChange={() => { setSubmitted((prev) => ({ ...prev, rsvp: false })); setRsvpData((prev) => ({ ...prev, attending: "yes" })); }} />
+                              <span>Delightfully accepts</span>
+                            </label>
+
+                            <label className="flex items-center gap-4 cursor-pointer group">
+                              <div className={`w-5 h-5 rounded-none border-[0.5px] flex items-center justify-center transition-colors ${rsvpData.attending === "no" ? "border-[#d4af37] bg-[#d4af37]/10" : "border-slate-300 bg-transparent group-hover:border-[#d4af37]/50"}`}>
+                                {rsvpData.attending === "no" && <div className="w-3 h-3 bg-[#d4af37]" />}
+                              </div>
+                              <input type="radio" className="hidden" checked={rsvpData.attending === "no"} onChange={() => { setSubmitted((prev) => ({ ...prev, rsvp: false })); setRsvpData((prev) => ({ ...prev, attending: "no" })); }} />
+                              <span>Regretfully declines</span>
+                            </label>
                           </div>
                         </div>
 
-                        <div className="space-y-3">
-                          <label className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] font-bold text-theme-200 ml-2">Dietary Notes</label>
-                          <input
-                            type="text"
-                            value={rsvpData.dietary}
-                            onChange={(e) => setRsvpData({ ...rsvpData, dietary: e.target.value })}
-                            placeholder="Allergies, Vegan, etc."
-                            className="w-full bg-transparent border-b border-white/20 px-2 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-theme-300 transition-colors font-cinzel text-lg md:text-xl tracking-wide"
-                          />
-                        </div>
+                        {rsvpData.attending === "yes" && (
+                          <div className="pt-4 animate-in fade-in slide-in-from-top-2 duration-500 relative group">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] absolute -top-4 left-0 transition-colors group-focus-within:text-[#d4af37]">
+                              Number of Guests
+                            </label>
+                            <div className="relative">
+                              <select
+                                value={rsvpData.guests}
+                                onChange={(e) => {
+                                  setSubmitted((prev) => ({ ...prev, rsvp: false }));
+                                  setRsvpData((prev) => ({ ...prev, guests: e.target.value }));
+                                }}
+                                className="w-full bg-transparent border-b-[0.5px] border-slate-300 px-0 py-2 text-slate-800 focus:outline-none focus:border-[#d4af37] transition-all font-serif text-lg md:text-xl italic appearance-none cursor-pointer"
+                              >
+                                {[1, 2, 3, 4, 5, 6].map((num) => (
+                                  <option key={num} value={num.toString()}>
+                                    {num} {num === 1 ? "Guest" : "Guests"}
+                                  </option>
+                                ))}
+                              </select>
+                              <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[#d4af37]">
+                                <ChevronDown size={16} />
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
-                        <div className="pt-10">
+                        {submitted.rsvp && (
+                          <p className="text-[10px] text-center font-semibold tracking-widest uppercase mt-4 text-emerald-700">
+                            Thank you! RSVP sent successfully.
+                          </p>
+                        )}
+
+                        <div className="pt-8">
                           <button
                             type="submit"
                             disabled={isSubmitting.rsvp}
-                            className={`w-full bg-theme-600 text-white py-5 rounded-full font-bold uppercase tracking-[0.3em] text-[10px] md:text-sm transition-all duration-300 group inline-flex justify-center items-center gap-4 ${isSubmitting.rsvp ? "opacity-50 cursor-not-allowed" : "hover:bg-theme-700 hover:shadow-[0_10px_30px_rgba(184,134,11,0.3)]"}`}
+                            className="w-full border-[0.5px] border-[#d4af37] bg-transparent text-[#d4af37] hover:bg-[#d4af37] hover:text-white py-4 rounded-sm font-montserrat text-[10px] md:text-[11px] tracking-[0.3em] font-medium transition-all shadow-[0_4px_10px_rgba(0,0,0,0.03)] uppercase disabled:opacity-50"
                           >
-                            <span className="w-1.5 h-1.5 bg-white rotate-45 group-hover:scale-150 transition-transform" />
-                            {isSubmitting.rsvp ? "Sending..." : "Send RSVP"}
-                            <span className="w-1.5 h-1.5 bg-white rotate-45 group-hover:scale-150 transition-transform" />
+                            {isSubmitting.rsvp ? "SENDING..." : "CONFIRM ATTENDANCE"}
                           </button>
                         </div>
                       </form>
-                    )}
-                  </div>
-                </motion.div>
+                    </div>
+                  </motion.div>
+                </div>
               </div>
             </section>
 
@@ -1190,7 +1174,11 @@ function WeddingInvitation() {
                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-playball text-[22vw] md:text-[220px] text-theme-100/40 whitespace-nowrap pointer-events-none z-0 select-none">
                         Thank You
                       </div>
-                      <p className="text-[9px] md:text-[11px] uppercase tracking-[0.8em] text-theme-600 font-bold relative z-10 bg-[#faf9f6] px-6 py-2 rounded-full border border-theme-100/50 shadow-sm">With Love</p>
+                      <p className="font-cinzel text-sm md:text-lg text-stone-600 text-center px-4 leading-relaxed max-w-lg mx-auto relative z-10 mb-2 italic">
+                        You're invited not just as a guest,<br />
+                        but as someone dear to our hearts.
+                      </p>
+                      <p className="text-[9px] md:text-[11px] uppercase tracking-[0.8em] text-theme-600 font-bold relative z-10 bg-[#faf9f6] px-6 py-2 rounded-full border border-theme-100/50 shadow-sm mt-4">With Love</p>
                       <h3 className="font-playball text-[3.2rem] sm:text-6xl md:text-8xl text-theme-900 relative z-10 drop-shadow-sm px-4 pt-4 leading-none">Praveen & Nipuni</h3>
 
                       <motion.img
@@ -1210,11 +1198,13 @@ function WeddingInvitation() {
 
 
               {/* Footer */}
-              <footer className="py-12 border-t border-theme-200/30 text-center relative z-10 space-y-3">
+              <footer className="py-12 border-t border-theme-200/30 text-center relative z-10 space-y-4">
+                <div className="flex flex-col items-center gap-2 mb-6 text-stone-500 font-cinzel tracking-widest text-xs md:text-sm">
+                  <p className="uppercase">Shimi / Manendra <span className="hidden md:inline mx-2">|</span><br className="md:hidden block my-1" /> <a href="tel:+94703450264" className="hover:text-theme-600 transition-colors">+94 70 345 0264</a></p>
+                </div>
                 <p className="text-[8px] md:text-[10px] uppercase tracking-[0.5em] text-stone-400 font-bold">
                   © 2026 Praveen & Nipuni. <span className="hidden md:inline">|</span><br className="md:hidden block mt-2" /> All rights reserved.
                 </p>
-
               </footer>
             </div>
           </motion.div>
