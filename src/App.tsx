@@ -374,7 +374,7 @@ function WeddingInvitation() {
 
     const updatePerformanceMode = () => {
       const constrainedNetwork = Boolean(connection?.saveData) || /2g/.test(connection?.effectiveType ?? "");
-      const lowMemory = typeof getDeviceMemory() === "number" && getDeviceMemory()! <= 4;
+      const lowMemory = typeof getDeviceMemory() === "number" && getDeviceMemory()! < 4;
       const smallScreen = window.innerWidth < 768;
       setIsLowPerformanceMode(motionMedia.matches || constrainedNetwork || lowMemory);
     };
