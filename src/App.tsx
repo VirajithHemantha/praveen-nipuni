@@ -1252,7 +1252,10 @@ You're warmly invited to celebrate our special day with us! ❤️
 🌸 View our wedding invitation here:
 ${generatedLink}
 
-We can't wait to celebrate with you! 🥂💖`;
+We can't wait to celebrate with you! 🥂💖
+
+With love, 
+Praveen & Nipuni ❤️`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(generatedLink);
