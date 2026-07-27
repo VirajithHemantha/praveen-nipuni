@@ -1239,15 +1239,31 @@ function AdminPage() {
   const [prefix, setPrefix] = useState("Mr.");
   const [name, setName] = useState("");
   const [copied, setCopied] = useState(false);
+  const [copiedMessage, setCopiedMessage] = useState(false);
 
   const guestName = `${prefix} ${name}`.trim();
   const baseUrl = window.location.origin;
   const generatedLink = `${baseUrl}/?to=${encodeURIComponent(guestName)}`;
 
+  const generatedMessage = `💍✨ Dear ${guestName},
+
+You're warmly invited to celebrate our special day with us! ❤️
+
+🌸 View our wedding invitation here:
+${generatedLink}
+
+We can't wait to celebrate with you! 🥂💖`;
+
   const handleCopy = () => {
     navigator.clipboard.writeText(generatedLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopyMessage = () => {
+    navigator.clipboard.writeText(generatedMessage);
+    setCopiedMessage(true);
+    setTimeout(() => setCopiedMessage(false), 2000);
   };
 
   return (
@@ -1324,6 +1340,25 @@ function AdminPage() {
                 className={`p-4 rounded-xl transition-all ${copied ? 'bg-green-500 text-white' : 'bg-theme-800 text-white hover:bg-theme-900 disabled:opacity-50'}`}
               >
                 {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-[10px] uppercase font-bold text-stone-400 tracking-widest">Full Invitation Message</label>
+            <div className="flex flex-col gap-2">
+              <textarea
+                readOnly
+                value={name ? generatedMessage : "Enter name above to generate message..."}
+                rows={7}
+                className="w-full bg-stone-50 border border-theme-100 p-4 rounded-xl text-xs text-stone-500 resize-none"
+              />
+              <button
+                onClick={handleCopyMessage}
+                disabled={!name}
+                className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 ${copiedMessage ? 'bg-green-500 text-white' : 'bg-theme-800 text-white hover:bg-theme-900 disabled:opacity-50'}`}
+              >
+                {copiedMessage ? <><Check className="w-4 h-4" /> Message Copied!</> : <><Copy className="w-4 h-4" /> Copy Full Message</>}
               </button>
             </div>
           </div>
