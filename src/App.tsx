@@ -209,7 +209,7 @@ function WeddingTimeline() {
   ];
 
   return (
-    <section 
+    <section
       className="cv-auto py-24 md:py-36 relative overflow-hidden flex flex-col items-center bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: "url('/images/ChatGPT Image Jun 8, 2026, 02_48_38 PM.png')" }}
     >
@@ -271,7 +271,7 @@ function WeddingInvitation() {
   const [submitted, setSubmitted] = useState({ rsvp: false, wish: false });
 
   // IMPORTANT: Replace this with your actual Google Apps Script Web App URL
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw0NXiffl9ZbdxazeBRBodSFu9Z6EHWF0QiVQWsOew3mHAKbb5jZ0zXeRbCDdDMvO6JnQ/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyC65TV4Zp6YTCRK5VJXJ9RzAfxxoq-9Eqc2UK7fFZF_hUF8N6xntTvH2cfceA47KIv/exec";
 
   const submitToGoogleSheet = async (payload: Record<string, string>) => {
     if (!SCRIPT_URL) {
@@ -456,7 +456,7 @@ function WeddingInvitation() {
 
             {/* Hero Section */}
             {/* Hero Section */}
-            <section 
+            <section
               className="min-h-[100dvh] w-full flex items-center justify-center p-4 md:p-12 relative overflow-hidden bg-cover bg-center bg-no-repeat"
               style={{ backgroundImage: "url('/ChatGPT Image Jun 8, 2026, 02_19_21 PM.png')" }}
             >
@@ -562,7 +562,7 @@ function WeddingInvitation() {
                   <p className="text-theme-700 text-[9px] md:text-[12px] tracking-[0.4em] md:tracking-[0.6em] uppercase font-bold text-center leading-loose">
                     {guestName ? (
                       <>
-                        <span className="text-theme-900 border-b border-theme-400 pb-1 mb-2 inline-block">{guestName}</span>
+                        <span className="text-theme-900 border-b border-theme-400 pb-1 mb-2 inline-block text-sm md:text-lg">{guestName}</span>
                         <br />
                         you are cordially invited to celebrate the union of
                       </>
@@ -650,14 +650,14 @@ function WeddingInvitation() {
                     <div className="relative flex-1 flex flex-col items-center text-center p-10 md:p-12 bg-white/60 backdrop-blur-md shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-theme-100 rounded-tr-[4rem] rounded-bl-[4rem] group hover:-translate-y-2 hover:shadow-[0_30px_50px_-15px_rgba(212,175,55,0.15)] transition-all duration-700 overflow-hidden">
                       <div className="absolute inset-2 border border-theme-200/40 rounded-tr-[3.5rem] rounded-bl-[3.5rem] pointer-events-none transition-colors duration-700 group-hover:border-theme-300/60" />
                       <div className="absolute inset-0 opacity-[0.02] paper-grain pointer-events-none" />
-                      
+
                       <div className="relative z-10 flex flex-col items-center h-full">
                         <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-theme-50 to-theme-100 shadow-sm border border-theme-200 mb-6 group-hover:scale-110 transition-transform duration-500">
                           <Clock className="w-6 h-6 text-theme-600" />
                         </div>
                         <span className="text-[9px] md:text-[10px] uppercase tracking-[0.4em] font-bold text-stone-400 mb-2">Sacred Vows</span>
                         <h4 className="font-playball text-4xl md:text-5xl text-theme-900 mb-4 drop-shadow-sm group-hover:text-theme-700 transition-colors">Church Ceremony</h4>
-                        
+
                         <div className="flex items-center gap-3 w-full justify-center my-6 opacity-60">
                           <div className="h-px w-12 bg-theme-300" />
                           <div className="w-1.5 h-1.5 rotate-45 bg-theme-400" />
@@ -665,7 +665,7 @@ function WeddingInvitation() {
                         </div>
 
                         <p className="font-cinzel text-lg md:text-xl text-theme-700 tracking-[0.2em] font-bold mb-8">1600 LT</p>
-                        
+
                         <div className="space-y-3 mt-auto">
                           <p className="text-stone-800 text-sm md:text-base tracking-wide font-medium uppercase font-cinzel">Infant Jesus Church</p>
                           <p className="text-stone-500 text-xs md:text-sm tracking-[0.2em] uppercase">Colombo 02</p>
@@ -677,14 +677,14 @@ function WeddingInvitation() {
                     <div className="relative flex-1 flex flex-col items-center text-center p-10 md:p-12 bg-white/60 backdrop-blur-md shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-theme-100 rounded-tl-[4rem] rounded-br-[4rem] group hover:-translate-y-2 hover:shadow-[0_30px_50px_-15px_rgba(212,175,55,0.15)] transition-all duration-700 overflow-hidden">
                       <div className="absolute inset-2 border border-theme-200/40 rounded-tl-[3.5rem] rounded-br-[3.5rem] pointer-events-none transition-colors duration-700 group-hover:border-theme-300/60" />
                       <div className="absolute inset-0 opacity-[0.02] paper-grain pointer-events-none" />
-                      
+
                       <div className="relative z-10 flex flex-col items-center h-full">
                         <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-theme-50 to-theme-100 shadow-sm border border-theme-200 mb-6 group-hover:scale-110 transition-transform duration-500">
                           <Sparkles className="w-6 h-6 text-theme-600" />
                         </div>
                         <span className="text-[9px] md:text-[10px] uppercase tracking-[0.4em] font-bold text-stone-400 mb-2">Celebration</span>
                         <h4 className="font-playball text-4xl md:text-5xl text-theme-900 mb-4 drop-shadow-sm group-hover:text-theme-700 transition-colors">The Reception</h4>
-                        
+
                         <div className="flex items-center gap-3 w-full justify-center my-6 opacity-60">
                           <div className="h-px w-12 bg-theme-300" />
                           <div className="w-1.5 h-1.5 rotate-45 bg-theme-400" />
@@ -692,7 +692,7 @@ function WeddingInvitation() {
                         </div>
 
                         <p className="font-cinzel text-lg md:text-xl text-theme-700 tracking-[0.2em] font-bold mb-8">1800 LT - 2300 LT</p>
-                        
+
                         <div className="space-y-3 mt-auto">
                           <p className="text-stone-800 text-sm md:text-base tracking-wide font-medium uppercase font-cinzel">Hotel Greencourt</p>
                           <p className="text-stone-600 text-xs md:text-sm tracking-[0.1em] italic">Emperors Court</p>
@@ -708,7 +708,7 @@ function WeddingInvitation() {
             <WeddingTimeline />
 
             {/* Countdown Section */}
-            <section 
+            <section
               className="cv-auto py-16 md:py-36 relative border-y border-theme-100/30 flex flex-col items-center overflow-hidden bg-cover bg-center bg-no-repeat"
               style={{ backgroundImage: "url('/images/ChatGPT Image Jun 8, 2026, 02_46_46 PM.png')" }}
             >
@@ -1200,7 +1200,7 @@ function WeddingInvitation() {
               {/* Footer */}
               <footer className="py-12 border-t border-theme-200/30 text-center relative z-10 space-y-4">
                 <div className="flex flex-col items-center gap-2 mb-6 text-stone-500 font-cinzel tracking-widest text-xs md:text-sm">
-                  <p className="uppercase">Shimi / Manendra <span className="hidden md:inline mx-2">|</span><br className="md:hidden block my-1" /> <a href="tel:+94703450264" className="hover:text-theme-600 transition-colors">+94 70 345 0264</a></p>
+                  <p className="uppercase">Shimi / Manendra (Event coordinator) <span className="hidden md:inline mx-2">|</span><br className="md:hidden block my-1" /> <a href="tel:+94703450264" className="hover:text-theme-600 transition-colors">+94 70 345 0264</a></p>
                 </div>
                 <p className="text-[8px] md:text-[10px] uppercase tracking-[0.5em] text-stone-400 font-bold">
                   © 2026 Praveen & Nipuni. <span className="hidden md:inline">|</span><br className="md:hidden block mt-2" /> All rights reserved.
