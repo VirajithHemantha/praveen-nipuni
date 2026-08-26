@@ -460,7 +460,7 @@ export function EnvelopeOpening({
 
                 <div className="text-details">
                   Request the honour of your presence<br />
-                  <span className="text-date">Thursday 03 December 2026 At 4:00 PM</span>
+                  <span className="text-date">Thursday 03 December 2026 At 6:30 PM</span>
                   <span className="text-church">Hotel Greencourt</span><br />
                   Homagama
                 </div>

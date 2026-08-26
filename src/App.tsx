@@ -528,7 +528,7 @@ function WeddingInvitation() {
                     </div>
                     <div className="font-cinzel space-y-1">
                       <p className="text-2xl md:text-4xl text-stone-700 tracking-[0.2em] md:tracking-[0.3em] font-bold">03 DEC 2026</p>
-                      <p className="text-xs md:text-sm text-theme-600 tracking-[0.2em] uppercase font-bold">Infant Jesus Church, Colombo 02</p>
+                      <p className="text-xs md:text-sm text-theme-600 tracking-[0.2em] uppercase font-bold">Hotel Greencourt, Homagama</p>
                     </div>
                   </motion.div>
                 </div>
