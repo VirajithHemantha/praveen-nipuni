@@ -398,7 +398,7 @@ function WeddingInvitation() {
     >
       <audio
         ref={audioRef}
-        src={encodeURI("/Justin Bieber - EVERYTHING HALLELUJAH Lyrics 🎵.mp3")}
+        src="/Christina Perri - A Thousand Years (Lyrics).mp3"
         loop
         autoPlay
       />
@@ -1204,6 +1204,17 @@ function WeddingInvitation() {
                 </div>
                 <p className="text-[8px] md:text-[10px] uppercase tracking-[0.5em] text-stone-400 font-bold">
                   © 2026 Praveen & Nipuni. <span className="hidden md:inline">|</span><br className="md:hidden block mt-2" /> All rights reserved.
+                </p>
+                <p className="text-stone-500 text-xs mt-2 font-sans tracking-wider">
+                  Want a beautiful wedding website like this? Create yours with{" "}
+                  <a
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-theme-700 hover:text-theme-900 font-semibold underline decoration-theme-300 hover:decoration-theme-600 transition-colors"
+                    href="https://wa.me/94707819074"
+                  >
+                    invitemint
+                  </a>
                 </p>
               </footer>
             </div>
