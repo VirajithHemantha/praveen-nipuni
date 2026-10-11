@@ -398,7 +398,7 @@ function WeddingInvitation() {
     >
       <audio
         ref={audioRef}
-        src="/Ed Sheeran - Perfect (Lyrics)_256k.mp3"
+        src={encodeURI("/Justin Bieber - EVERYTHING HALLELUJAH Lyrics 🎵.mp3")}
         loop
         autoPlay
       />
